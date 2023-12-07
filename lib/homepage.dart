@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:garudajayasakti/colors.dart';
 import 'package:garudajayasakti/delivery.dart';
+import 'package:garudajayasakti/history.dart';
 import 'package:garudajayasakti/home.dart';
 import 'nextpage.dart';
 
@@ -64,9 +65,7 @@ class _HomePageState extends State<HomePage> {
         return DeliveryPage();
       case 2:
       // Tambahkan widget untuk tampilan index 2 di sini
-        return Center(
-          child: Text('Other Houses Page Content'),
-        );
+        return HistoryPage();
       default:
         return Home();
     }

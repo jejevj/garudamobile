@@ -1,9 +1,13 @@
 // main.dart
 import 'package:flutter/material.dart';
+import 'package:garudajayasakti/berhasil_ubah.dart';
+import 'package:garudajayasakti/detail_profil.dart';
+import 'package:garudajayasakti/ubah_password.dart';
 import 'homepage.dart';
 import 'login.dart';
 import 'splash_screen.dart';
 import 'colors.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -22,6 +26,9 @@ class MyApp extends StatelessWidget {
         '/splash': (context) => SplashScreen(),
         '/login': (context) => LoginScreen(),
         '/home': (context) => MainScreen(), // Gunakan MainScreen sebagai halaman utama
+        '/profile': (context) => DetailProfilPage(),
+        '/ubah_password': (context) => UbahPasswordPage(),
+        '/ubah_password_sukses': (context) => UbahPasswordSuksesPage(),
       },
     );
   }
