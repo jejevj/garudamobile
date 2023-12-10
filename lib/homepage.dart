@@ -13,7 +13,21 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
   int _currentIndex = 0;
+  late int _userId = 0; // Inisialisasi awal dengan nilai default
+
+  @override
+  void didChangeDependencies() {
+    // Menerima argumen ketika halaman ini dibuat
+    Map<String, dynamic>? args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null && args.containsKey('userId')) {
+      _userId = args['userId'];
+    }
+
+    super.didChangeDependencies();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +73,7 @@ class _HomePageState extends State<HomePage> {
     switch (_currentIndex) {
       case 0:
         return
-            Home();
+            Home(userId: _userId);
       case 1:
       // Tambahkan widget untuk tampilan index 1 di sini
         return DeliveryPage();
@@ -67,7 +81,7 @@ class _HomePageState extends State<HomePage> {
       // Tambahkan widget untuk tampilan index 2 di sini
         return HistoryPage();
       default:
-        return Home();
+        return Home(userId: _userId);
     }
   }
 }

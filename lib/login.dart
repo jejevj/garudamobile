@@ -1,8 +1,17 @@
-// login.dart
 import 'package:flutter/material.dart';
-import 'colors.dart';
+import 'package:garudajayasakti/object/User.dart';
+import 'colors.dart'; // Sesuaikan dengan jalur file User.dart
+import 'package:collection/collection.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -42,6 +51,7 @@ class LoginScreen extends StatelessWidget {
 
   Widget _buildUsernameField() {
     return TextFormField(
+      controller: _usernameController,
       style: TextStyle(color: Colors.black),
       decoration: InputDecoration(
         filled: true,
@@ -56,6 +66,7 @@ class LoginScreen extends StatelessWidget {
 
   Widget _buildPasswordField() {
     return TextFormField(
+      controller: _passwordController,
       obscureText: true,
       style: TextStyle(color: Colors.black),
       decoration: InputDecoration(
@@ -71,8 +82,44 @@ class LoginScreen extends StatelessWidget {
 
   Widget _buildLoginButton(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
-        Navigator.pushReplacementNamed(context, '/home');
+      onPressed: () async {
+        List<User> users = await fetchData();
+        String enteredUsername = _usernameController.text;
+        String enteredPassword = _passwordController.text;
+
+        User? authenticatedUser = users.firstWhereOrNull((user) =>
+        user.username == enteredUsername && user.password == enteredPassword);
+
+        if (authenticatedUser != null) {
+          // Save user.id for future use
+          int userId = authenticatedUser.id;
+
+          // Navigate to the next page and pass the user id
+          Navigator.pushReplacementNamed(
+            context,
+            '/home',
+            arguments: {'userId': userId},
+          );
+        } else {
+          // Show an error message or handle the login failure accordingly
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Login Failed'),
+                content: Text('Invalid username or password.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
       },
       child: Text('Login'),
       style: ElevatedButton.styleFrom(

@@ -1,6 +1,7 @@
 // main.dart
 import 'package:flutter/material.dart';
 import 'package:garudajayasakti/berhasil_ubah.dart';
+import 'package:garudajayasakti/data.dart';
 import 'package:garudajayasakti/detail_profil.dart';
 import 'package:garudajayasakti/ubah_password.dart';
 import 'homepage.dart';
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => DetailProfilPage(),
         '/ubah_password': (context) => UbahPasswordPage(),
         '/ubah_password_sukses': (context) => UbahPasswordSuksesPage(),
+        '/data_tes': (context) => DataTes(),
       },
     );
   }
