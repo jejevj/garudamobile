@@ -10,6 +10,8 @@ import 'colors.dart';
 
 
 void main() {
+
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 

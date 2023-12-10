@@ -1,6 +1,7 @@
 // delivery_detail_page.dart
 import 'package:flutter/material.dart';
 import 'package:garudajayasakti/colors.dart';
+import 'package:garudajayasakti/delivery_detail_map.dart';
 
 class DeliveryDetailPage extends StatelessWidget {
   final int deliveryNumber;
@@ -62,6 +63,12 @@ class DeliveryDetailPage extends StatelessWidget {
               onPressed: () {
                 // Tambahkan logika untuk memulai pengiriman
                 print('Pengiriman dimulai untuk Delivery #$deliveryNumber');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DeliveryMap(),
+                  ),
+                );
               },
               child: Text('Start'),
 
