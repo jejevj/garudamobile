@@ -76,10 +76,10 @@ class _HomePageState extends State<HomePage> {
             Home(userId: _userId);
       case 1:
       // Tambahkan widget untuk tampilan index 1 di sini
-        return DeliveryPage();
+        return DeliveryPage(userId: _userId);
       case 2:
       // Tambahkan widget untuk tampilan index 2 di sini
-        return HistoryPage();
+        return HistoryPage(userId: _userId);
       default:
         return Home(userId: _userId);
     }

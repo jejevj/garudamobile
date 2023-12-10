@@ -1,20 +1,94 @@
-// welcome_page.dart
 import 'package:flutter/material.dart';
 import 'package:garudajayasakti/object/User.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 
-class Home extends StatelessWidget {
+class Home extends StatefulWidget {
   final int userId;
 
   // Konstruktor menerima ID pengguna
   Home({required this.userId});
 
   @override
+  _HomeState createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  String? _currentAddress;
+  Position? _currentPosition;
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentPosition();
+  }
+
+  Future<bool> _handleLocationPermission() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Location services are disabled. Please enable the services'),
+      ));
+      return false;
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Location permissions are denied'),
+        ));
+        return false;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+          'Location permissions are permanently denied, we cannot request permissions.',
+        ),
+      ));
+      return false;
+    }
+    return true;
+  }
+
+  Future<void> _getCurrentPosition() async {
+    final hasPermission = await _handleLocationPermission();
+
+    if (!hasPermission) return;
+    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+        .then((Position position) {
+      setState(() => _currentPosition = position);
+      _getAddressFromLatLng(_currentPosition!);
+    }).catchError((e) {
+      debugPrint(e);
+    });
+  }
+
+  Future<void> _getAddressFromLatLng(Position position) async {
+    await placemarkFromCoordinates(
+        _currentPosition!.latitude, _currentPosition!.longitude)
+        .then((List<Placemark> placemarks) {
+      Placemark place = placemarks[0];
+      setState(() {
+        _currentAddress =
+        '${place.street}, ${place.subLocality}, ${place.subAdministrativeArea}, ${place.postalCode}';
+      });
+    }).catchError((e) {
+      debugPrint(e);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder<User>(
-      future: fetchUserById(userId),
+      future: fetchUserById(widget.userId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(),);
+          return Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else {
@@ -47,7 +121,7 @@ class Home extends StatelessWidget {
                 ),
                 SizedBox(height: 10.0),
                 Text(
-                  '${user.username.toUpperCase()}', // Menampilkan username dan ID pengguna
+                  '${user.username.toUpperCase()}',
                   style: TextStyle(
                     fontSize: 18.0,
                   ),
@@ -55,11 +129,30 @@ class Home extends StatelessWidget {
                 SizedBox(height: 20.0),
                 ElevatedButton(
                   onPressed: () {
-                    // Pindah ke halaman profil dengan membawa ID pengguna
-                    Navigator.pushNamed(context, '/profile', arguments: {'userId': userId});
+                    Navigator.pushNamed(context, '/profile', arguments: {'userId': widget.userId});
                   },
                   child: Text('Lihat Profil'),
                 ),
+                ElevatedButton(
+                  onPressed: () async {
+                    await _getCurrentPosition(); // Wait for the completion of _getCurrentPosition()
+
+                    // Now you can safely use _currentPosition
+                    User.updateLocation(
+                      widget.userId,
+                      _currentPosition?.latitude ?? 0,
+                      _currentPosition?.longitude ?? 0,
+                    );
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Berhasil Update Lokasi'),
+                      ),
+                    );
+                  },
+                  child: Text('Update Lokasi'),
+                ),
+
               ],
             ),
           );

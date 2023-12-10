@@ -4,7 +4,7 @@ import 'package:garudajayasakti/colors.dart';
 import 'package:garudajayasakti/delivery_detail_map.dart';
 
 class DeliveryDetailPage extends StatelessWidget {
-  final int deliveryNumber;
+  final String deliveryNumber;
 
   const DeliveryDetailPage({required this.deliveryNumber});
 

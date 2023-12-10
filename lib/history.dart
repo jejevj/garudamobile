@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:garudajayasakti/colors.dart';
 
 class HistoryPage extends StatelessWidget {
+  final int userId;
+
+  // Konstruktor menerima ID pengguna
+  HistoryPage({required this.userId});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
