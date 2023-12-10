@@ -91,21 +91,33 @@ class _UbahPasswordSuksesPageState extends State<UbahPasswordSuksesPage> {
                 ],
               ),
             ),
+            // ubah_password_sukses.dart
+            // ubah_password_sukses.dart
             Align(
               alignment: Alignment.bottomCenter,
               child: Container(
                 margin: EdgeInsets.only(bottom: 20.0),
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/home');
+                    // Mendapatkan argumen yang dikirimkan
+                    final Map<String, dynamic>? args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+                    if (args != null && args.containsKey('userId')) {
+                      // Menggunakan Navigator untuk kembali ke halaman home dan mengirimkan ID pengguna
+                      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false, arguments: {'userId': args['userId']});
+                    } else {
+                      // Handle jika ID pengguna tidak ditemukan
+                      print('User ID not found.');
+                    }
                   },
-                  child: Text('Kembali ke Home',style: TextStyle(color: AppColors.whitePrimary),),
+                  child: Text('Kembali ke Home', style: TextStyle(color: AppColors.whitePrimary)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.purplePrimary, // Sesuaikan dengan warna proyek Anda
+                    backgroundColor: AppColors.purplePrimary,
                   ),
                 ),
               ),
             ),
+
           ],
         ),
       ),

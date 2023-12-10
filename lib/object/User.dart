@@ -37,6 +37,17 @@ class User {
       createdAt: json['created_at'],
     );
   }
+  static Future<void> updatePassword(int userId, String newPassword) async {
+    final Uri url = Uri.parse('https://garudadriver.azurewebsites.net/api/update-driver/$userId/');
+    final Map<String, String> headers = {'Content-Type': 'application/json'};
+    final Map<String, dynamic> body = {'password': newPassword};
+
+    final response = await http.patch(url, headers: headers, body: jsonEncode(body));
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update password');
+    }
+  }
 }
 
 Future<List<User>> fetchData() async {
@@ -65,3 +76,5 @@ Future<User> fetchUserById(int userId) async {
     throw Exception('Failed to load user');
   }
 }
+
+
