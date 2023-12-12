@@ -103,3 +103,17 @@ Future<User> fetchUserById(int userId) async {
 }
 
 
+Future<User> fetchUserByUsername(String username) async {
+  final response = await http.get(
+    Uri.parse('https://garudadriver.azurewebsites.net/api/driver-by-username/$username/?format=json'),
+  );
+
+  if (response.statusCode == 200) {
+    Map<String, dynamic> data = jsonDecode(response.body);
+    return User.fromJson(data);
+  } else {
+    throw Exception('Failed to load user');
+  }
+}
+
+

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:garudajayasakti/berhasil_ubah.dart';
 import 'package:garudajayasakti/data.dart';
+import 'package:garudajayasakti/delivery_detail_page.dart';
 import 'package:garudajayasakti/detail_profil.dart';
 import 'package:garudajayasakti/ubah_password.dart';
 import 'homepage.dart';
@@ -33,9 +34,11 @@ class MyApp extends StatelessWidget {
         '/ubah_password': (context) => UbahPasswordPage(),
         '/ubah_password_sukses': (context) => UbahPasswordSuksesPage(),
         '/data_tes': (context) => DataTes(),
+        '/delivery_detail_page': (context) => DeliveryDetailPage(),
       },
     );
   }
+
 }
 
 class MainScreen extends StatefulWidget {

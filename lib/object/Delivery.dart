@@ -13,7 +13,7 @@ class Delivery {
   final String driverName;
   final double driverLat;
   final double driverLon;
-  final String photo;
+  final String? photo;
   final String status;
 
   Delivery({
@@ -62,5 +62,25 @@ Future<List<Delivery>> fetchDataDelivery() async {
     return deliveries;
   } else {
     throw Exception('Failed to load delivery data');
+  }
+}
+
+Future<Delivery> fetchDataDeliveryById(String id) async {
+  try {
+    final response = await http.get(
+      Uri.parse('https://garudadriver.azurewebsites.net/api/delivery-by-id/$id?format=json'),
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> data = jsonDecode(response.body);
+      return Delivery.fromJson(data);
+    } else {
+      print('Error response: ${response.statusCode}');
+      print('Error body: ${response.body}');
+      throw Exception('Failed to load delivery by ID: $id');
+    }
+  } catch (error) {
+    print('Error: $error');
+    throw Exception('Failed to load delivery by ID: $id');
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garudajayasakti/colors.dart';
 import 'package:garudajayasakti/object/User.dart';
-import 'package:garudajayasakti/object/delivery.dart'; // Sesuaikan path sesuai dengan struktur proyek Anda
+import 'package:garudajayasakti/object/Delivery.dart'; // Sesuaikan path sesuai dengan struktur proyek Anda
 import 'delivery_detail_page.dart';
 
 class DeliveryPage extends StatefulWidget {
@@ -98,16 +98,14 @@ class _DeliveryPageState extends State<DeliveryPage> {
           style: TextStyle(
             color: Colors.white,
           ),
-        ),
-        onTap: () {
-          // Arahkan ke halaman DeliveryDetail saat item diklik
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DeliveryDetailPage(deliveryNumber: delivery.noDelivery),
-            ),
-          );
-        },
+        ),onTap: () {
+        Navigator.pushNamed(
+          context,
+          '/delivery_detail_page',
+          arguments: {'deliveryNumber': delivery.noDelivery},
+        );
+      },
+
       ),
     );
   }

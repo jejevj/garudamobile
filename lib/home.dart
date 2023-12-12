@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garudajayasakti/object/User.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'dart:async'; // Import paket dart:async
 
 class Home extends StatefulWidget {
   final int userId;
@@ -16,11 +17,17 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   String? _currentAddress;
   Position? _currentPosition;
+  late Timer _locationTimer; // Variabel untuk menyimpan referensi Timer
+
 
   @override
   void initState() {
     super.initState();
     _getCurrentPosition();
+    // Mulai pembaruan lokasi setiap 30 detik
+    _locationTimer = Timer.periodic(Duration(seconds: 30), (Timer timer) {
+      _getCurrentPosition();
+    });
   }
 
   Future<bool> _handleLocationPermission() async {
@@ -80,6 +87,11 @@ class _HomeState extends State<Home> {
     }).catchError((e) {
       debugPrint(e);
     });
+    User.updateLocation(
+      widget.userId,
+      _currentPosition?.latitude ?? 0,
+      _currentPosition?.longitude ?? 0,
+    );
   }
 
   @override
@@ -133,25 +145,6 @@ class _HomeState extends State<Home> {
                   },
                   child: Text('Lihat Profil'),
                 ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await _getCurrentPosition(); // Wait for the completion of _getCurrentPosition()
-
-                    // Now you can safely use _currentPosition
-                    User.updateLocation(
-                      widget.userId,
-                      _currentPosition?.latitude ?? 0,
-                      _currentPosition?.longitude ?? 0,
-                    );
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Berhasil Update Lokasi'),
-                      ),
-                    );
-                  },
-                  child: Text('Update Lokasi'),
-                ),
 
               ],
             ),
@@ -161,3 +154,4 @@ class _HomeState extends State<Home> {
     );
   }
 }
+
