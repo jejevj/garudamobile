@@ -59,13 +59,20 @@ class _DeliveryPageState extends State<DeliveryPage> {
           );
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Center(
-            child: Text('No delivery data available.'),
+            child: Text('Tidak ada pengiriman saat ini'),
           );
         }
 
-        // Filter data berdasarkan driverName
-        final filteredDeliveries =
-        snapshot.data!.where((delivery) => delivery.driverName == driverUsername).toList();
+        // Filter data berdasarkan driverName dan status
+        final filteredDeliveries = snapshot.data!
+            .where((delivery) => delivery.driverName == driverUsername && delivery.status == "Pickup")
+            .toList();
+
+        if (filteredDeliveries.isEmpty) {
+          return Center(
+            child: Text('Tidak ada pengiriman saat ini.'),
+          );
+        }
 
         return ListView.builder(
           itemCount: filteredDeliveries.length,

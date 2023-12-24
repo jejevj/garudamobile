@@ -68,25 +68,32 @@ class DeliveryDetailPage extends StatelessWidget {
               fit: BoxFit.contain,
             ),
             SizedBox(height: 20.0),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  print('Pengiriman dimulai untuk Delivery #${delivery.noDelivery}');
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DeliveryMap(),
-                      settings: RouteSettings(
-                        arguments: {'noDelivery': delivery.noDelivery},
+            if (delivery.status != 'Delivered') // Tambahkan kondisi untuk menampilkan tombol hanya jika status bukan "Delivered"
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    print('Pengiriman dimulai untuk Delivery #${delivery.noDelivery}');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DeliveryMap(),
+                        settings: RouteSettings(
+                          arguments: {'noDelivery': delivery.noDelivery},
+                        ),
                       ),
-                    ),
-                  );
-                },
-
-                child: Text('Start'),
+                    );
+                  },
+                  child: Text('Start'),
+                ),
               ),
-            ),
+            if (delivery.status == 'Delivered') // Tampilkan tulisan jika status "Delivered"
+              Center(
+                child:Text(
+                  'Pengiriman sudah selesai',
+                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                ),
+              )
           ],
         );
       },

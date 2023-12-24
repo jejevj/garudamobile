@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
 class Delivery {
   final String noDelivery;
   final String date;
@@ -49,61 +48,50 @@ class Delivery {
       status: json['status'],
     );
   }
-  // Fungsi untuk melakukan pembaruan pada foto dan status pengiriman
-  Future<void> updateDelivery(String newPhotoUrl, String newStatus) async {
-    // Endpoint untuk update
-    String updateEndpoint = "https://garudadriver.azurewebsites.net/api/delivery-by-id/$noDelivery?format=api";
 
-    // Data yang akan diupdate
-    Map<String, String> data = {
-      "photo": newPhotoUrl,
-      "status": newStatus,
-    };
-
+  Future<void> updateDelivery(String imagePath, String status) async {
     try {
-      // Membuat permintaan PATCH untuk melakukan update
-      var response = await http.patch(
-        Uri.parse(updateEndpoint),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(data),
-      );
+      var request = http.MultipartRequest(
+          'PUT',
+          Uri.parse(
+              'https://garudadriver.azurewebsites.net/api/delivery-by-id/$noDelivery?format=json'));
 
-      // Cek apakah permintaan berhasil (HTTP 200 OK)
+      // Menambahkan data teks
+      request.fields['status'] = status;
+
+      // Menambahkan data yang diperlukan (sesuaikan dengan kebutuhan)
+      request.fields['no_delivery'] = noDelivery;
+      request.fields['date'] = date;
+      request.fields['address'] = address;
+      request.fields['cp'] = cp;
+      request.fields['hp'] = hp;
+      request.fields['driver_name'] = driverName;
+
+      var file = await http.MultipartFile.fromPath('photo', imagePath);
+      request.files.add(file);
+
+      var response = await request.send();
+
       if (response.statusCode == 200) {
-        print("Update berhasil");
-        // Jika Anda ingin memperbarui objek Delivery setelah pembaruan, Anda dapat menambahkan logika di sini
-        // contoh: this.photo = newPhotoUrl; this.status = newStatus;
+        print('Upload bukti pengiriman berhasil');
       } else {
-        print("Update gagal. Status code: ${response.statusCode}");
-        print("Response: ${response.body}");
+        print(
+            'Gagal upload bukti pengiriman. Status code: ${response.statusCode}');
+        print('Response: ${await response.stream.bytesToString()}');
       }
     } catch (error) {
-      print("Error: $error");
-      throw Exception("Failed to update delivery");
+      print('Error: $error');
+      throw Exception('Gagal upload bukti pengiriman');
     }
   }
-}
 
-Future<List<Delivery>> fetchDataDelivery() async {
-  final response = await http.get(
-    Uri.parse('https://garudadriver.azurewebsites.net/api/delivery/?format=json'),
-  );
-
-  if (response.statusCode == 200) {
-    List<dynamic> data = jsonDecode(response.body);
-    List<Delivery> deliveries = data.map((json) => Delivery.fromJson(json)).toList();
-    return deliveries;
-  } else {
-    throw Exception('Failed to load delivery data');
-  }
 }
 
 Future<Delivery> fetchDataDeliveryById(String id) async {
   try {
     final response = await http.get(
-      Uri.parse('https://garudadriver.azurewebsites.net/api/delivery-by-id/$id?format=json'),
+      Uri.parse(
+          'https://garudadriver.azurewebsites.net/api/delivery-by-id/$id?format=json'),
     );
 
     if (response.statusCode == 200) {

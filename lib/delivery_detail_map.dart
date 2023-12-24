@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:garudajayasakti/bukti_kirim.dart';
+import 'package:garudajayasakti/colors.dart';
 import 'package:garudajayasakti/object/Delivery.dart';
 import 'package:garudajayasakti/object/User.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -7,7 +9,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class DeliveryMap extends StatefulWidget {
-  final Completer<GoogleMapController> _controller = Completer();
 
   final List<LatLng> polylineCoordinates = [];
 
@@ -30,7 +31,7 @@ class _DeliveryMapState extends State<DeliveryMap> {
             'Delivery',
             style: TextStyle(color: Colors.white),
           ),
-          backgroundColor: Colors.purple,
+          backgroundColor: AppColors.purplePrimary,
         ),
         body: FutureBuilder<Delivery>(
           future: fetchDataDeliveryById(deliveryNumber),
@@ -81,6 +82,7 @@ class _DeliveryMapState extends State<DeliveryMap> {
                   sourceLocation: LatLng(user.lat, user.lon),
                   destinationLocation:
                   LatLng(delivery.custLat, delivery.custLon),
+                  noDelivery: deliveryNumber,
                 );
               },
 
@@ -96,10 +98,12 @@ class _DeliveryMapState extends State<DeliveryMap> {
 class DeliveryMapView extends StatefulWidget {
   final LatLng sourceLocation;
   final LatLng destinationLocation;
+  final String noDelivery;
 
   DeliveryMapView({
     required this.sourceLocation,
     required this.destinationLocation,
+    required this.noDelivery,
   });
 
   @override
@@ -150,10 +154,14 @@ class _DeliveryMapViewState extends State<DeliveryMapView> {
             padding: EdgeInsets.all(8),
             child: ElevatedButton(
               onPressed: () {
-                // Your code for completing the order
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UploadBuktiPage(noDelivery: widget.noDelivery)),
+                );
               },
               child: Text('Selesaikan Pesanan'),
             ),
+
           ),
         ),
         Positioned(

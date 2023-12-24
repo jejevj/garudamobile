@@ -1,82 +1,118 @@
-// history_page.dart
 import 'package:flutter/material.dart';
 import 'package:garudajayasakti/colors.dart';
+import 'package:garudajayasakti/object/User.dart';
+import 'package:garudajayasakti/object/Delivery.dart'; // Sesuaikan path sesuai dengan struktur proyek Anda
+import 'delivery_detail_page.dart';
 
-class HistoryPage extends StatelessWidget {
+class HistoryPage extends StatefulWidget {
   final int userId;
 
   // Konstruktor menerima ID pengguna
   HistoryPage({required this.userId});
+  @override
+  _HistoryPageState createState() => _HistoryPageState();
+}
+
+class _HistoryPageState extends State<HistoryPage> {
+  late Future<List<Delivery>> futureDelivery;
+  late String driverUsername = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+    futureDelivery = fetchDataDelivery();
+  }
+
+  Future<void> _fetchUserData() async {
+    try {
+      final User user = await fetchUserById(widget.userId);
+      setState(() {
+        driverUsername = user.username;
+      });
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('History'),
       ),
-      body: _buildHistoryList(context),
+      body: _buildDeliveryList(context),
     );
   }
 
-  Widget _buildHistoryList(BuildContext context) {
-    return ListView.builder(
-      itemCount: 5,
-      itemBuilder: (context, index) {
-        return _buildHistoryCard(context, index + 1);
+  Widget _buildDeliveryList(BuildContext context) {
+    return FutureBuilder<List<Delivery>>(
+      future: futureDelivery,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text('Error: ${snapshot.error}'),
+          );
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(
+            child: Text('Tidak ada pengiriman saat ini'),
+          );
+        }
+
+        // Filter data berdasarkan driverName dan status
+        final filteredDeliveries = snapshot.data!
+            .where((delivery) => delivery.driverName == driverUsername && delivery.status == "Delivered")
+            .toList();
+
+        if (filteredDeliveries.isEmpty) {
+          return Center(
+            child: Text('Tidak ada pengiriman saat ini.'),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: filteredDeliveries.length,
+          itemBuilder: (context, index) {
+            return _buildDeliveryCard(context, filteredDeliveries[index]);
+          },
+        );
       },
     );
   }
 
-  Widget _buildHistoryCard(BuildContext context, int cardNumber) {
+  Widget _buildDeliveryCard(BuildContext context, Delivery delivery) {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15.0),
       ),
       elevation: 5.0,
       margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      color: cardNumber.isOdd ? AppColors.purplePrimary : AppColors.whitePrimary,
-      child: Padding(
-        padding: EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            // Gambar di sebelah kiri kartu
-            Container(
-              width: 70.0,
-              height: 70.0,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  fit: BoxFit.cover,
-                  image: AssetImage('assets/history_image_$cardNumber.png'), // Ganti dengan path gambar sesuai keinginan
-                ),
-              ),
-            ),
-            SizedBox(width: 16.0), // Beri jarak antara gambar dan keterangan
-
-            // Keterangan di sebelah kanan kartu
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'History #$cardNumber',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16.0,
-                      color: cardNumber.isOdd ? Colors.white : Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 8.0),
-                  Text(
-                    'Detail keterangan history #$cardNumber',
-                    style: TextStyle(
-                      color: cardNumber.isOdd ? Colors.white : Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+      color: AppColors.purplePrimary, // Ganti dengan warna sesuai keinginan
+      child: ListTile(
+        title: Text(
+          'Delivery #${delivery.noDelivery}',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
+        subtitle: Text(
+          'Alamat pengiriman: ${delivery.address}',
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),onTap: () {
+        Navigator.pushNamed(
+          context,
+          '/delivery_detail_page',
+          arguments: {'deliveryNumber': delivery.noDelivery},
+        );
+      },
+
       ),
     );
   }

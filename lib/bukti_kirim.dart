@@ -1,10 +1,16 @@
 import 'dart:io';
-
-import 'package:flutter/material.dart';
+import 'package:garudajayasakti/berhasil_kirim.dart';
+import 'package:garudajayasakti/object/DeliveryOk.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter/material.dart';
+import 'package:garudajayasakti/object/User.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+
 class UploadBuktiPage extends StatefulWidget {
+  final String noDelivery;
+
+  UploadBuktiPage({required this.noDelivery});
   @override
   _UploadBuktiPageState createState() => _UploadBuktiPageState();
 }
@@ -51,13 +57,36 @@ class _UploadBuktiPageState extends State<UploadBuktiPage> {
       return;
     }
 
-    // Ambil gambar
     final XFile image = await _controller.takePicture();
 
-    // Simpan path gambar
     setState(() {
       _imagePath = image.path;
     });
+  }
+
+  Future<void> _uploadProofOfDelivery() async {
+    try {
+      if (_imagePath != null) {
+        File imageFile = File(_imagePath!);
+        Delivery delivery = await fetchDataDeliveryById(widget.noDelivery);
+        await delivery.updateDelivery(imageFile.path, "Delivered");
+        print("Bukti pengiriman berhasil diupload");
+        User user = await fetchUserByUsername(delivery.driverName);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BerhasilKirimBukti(),
+            settings: RouteSettings(
+              arguments: {'userId': user.id}, // Sesuaikan dengan data yang ingin Anda kirim
+            ),
+          ),
+        );
+      } else {
+        print("Ambil foto terlebih dahulu");
+      }
+    } catch (error) {
+      print("Error: $error");
+    }
   }
 
   @override
@@ -92,10 +121,7 @@ class _UploadBuktiPageState extends State<UploadBuktiPage> {
             ),
             SizedBox(height: 16.0),
             ElevatedButton(
-              onPressed: () {
-                // Upload bukti pengiriman logic here
-                print('Upload bukti pengiriman...');
-              },
+              onPressed: _uploadProofOfDelivery,
               child: Text('Upload Bukti Pengiriman'),
             ),
           ],
@@ -107,13 +133,11 @@ class _UploadBuktiPageState extends State<UploadBuktiPage> {
   Widget _buildCameraPreview() {
     if (_controller.value.isInitialized) {
       if (_imagePath != null) {
-        // Jika ada gambar yang diambil, tampilkan gambar
         return Image.file(
           File(_imagePath!),
           height: 200.0,
         );
       } else {
-        // Jika belum ada gambar yang diambil, tampilkan frame kamera
         return Container(
           height: 200.0,
           child: CameraPreview(_controller),
