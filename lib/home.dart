@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:garudajayasakti/object/LocationUtil.dart';
 import 'package:garudajayasakti/object/User.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -22,7 +23,7 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    super.initState();
+    super.initState();// Contoh pemanggilan dari kelas lain
     _getCurrentPosition();
     // Mulai pembaruan lokasi setiap 30 detik
     _locationTimer = Timer.periodic(Duration(seconds: 30), (Timer timer) {
@@ -141,7 +142,8 @@ class _HomeState extends State<Home> {
                 SizedBox(height: 20.0),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/profile', arguments: {'userId': widget.userId});
+                    // Navigator.pushNamed(context, '/profile', arguments: {'userId': widget.userId});
+
                   },
                   child: Text('Lihat Profil'),
                 ),
