@@ -1,17 +1,17 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:garudajayasakti/bukti_kirim.dart';
 import 'package:garudajayasakti/colors.dart';
 import 'package:garudajayasakti/object/Delivery.dart';
+import 'package:garudajayasakti/object/Jarak.dart';
+import 'package:garudajayasakti/object/LocationUtil.dart';
 import 'package:garudajayasakti/object/User.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class DeliveryMap extends StatefulWidget {
-
-  final List<LatLng> polylineCoordinates = [];
-
   @override
   _DeliveryMapState createState() => _DeliveryMapState();
 }
@@ -111,8 +111,60 @@ class DeliveryMapView extends StatefulWidget {
 }
 
 class _DeliveryMapViewState extends State<DeliveryMapView> {
-  Completer<GoogleMapController> _controller = Completer();
+
   Set<Polyline> _polylines = {};
+  late GoogleMapController mapController;
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+  String googleAPiKey = "AIzaSyAqjK9pohRLvcZZe745qh2KmpHS_DYsrts";
+  double _actualDistance = 0.0;
+  late RouteInfo routeInfo; // Singleton instance
+
+  @override
+  void initState() {
+    super.initState();
+
+    var initializationSettingsAndroid =
+    AndroidInitializationSettings(
+        'logo'); // This line is removed for Android-only
+    var initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid
+
+    );
+
+    flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+
+    );
+    routeInfo = RouteInfo();
+    // Fetch and draw the route when the widget is created
+    _fetchRoute();
+
+
+  }
+
+  Future<void> _showNotification(String title, String body) async {
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'your_channel_id',
+      'your_channel_name',
+
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+    );
+    var platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: 'Default_Sound',
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -120,16 +172,22 @@ class _DeliveryMapViewState extends State<DeliveryMapView> {
       children: [
         GoogleMap(
           initialCameraPosition: CameraPosition(
-            target: widget.destinationLocation,
+            target: widget.sourceLocation,
             zoom: 13.5,
+
           ),
+          tiltGesturesEnabled: true,
+          compassEnabled: true,
+          scrollGesturesEnabled: true,
+          zoomGesturesEnabled: true,
           markers: {
             Marker(
               markerId: MarkerId("source"),
               position: widget.sourceLocation,
-              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueOrange),
               infoWindow: InfoWindow(
-                title: 'Lokasi Kamu',
+                title: 'Lokasi Kamu, userID:${LocationUtil.userid}',
               ),
             ),
             Marker(
@@ -137,15 +195,13 @@ class _DeliveryMapViewState extends State<DeliveryMapView> {
               position: widget.destinationLocation,
               infoWindow: InfoWindow(
                 title: 'Tujuan',
-                snippet: 'Klik Panah Dibawah Kanan...',
+                snippet: 'Klik Panah Dibawah Kanan ...',
               ),
             ),
+
           },
+
           polylines: _polylines,
-          onMapCreated: (mapController) {
-            _controller.complete(mapController);
-            _getDirections();
-          },
         ),
         Positioned(
           bottom: 20,
@@ -158,6 +214,10 @@ class _DeliveryMapViewState extends State<DeliveryMapView> {
                   context,
                   MaterialPageRoute(builder: (context) => UploadBuktiPage(noDelivery: widget.noDelivery)),
                 );
+                // _showNotification(
+                //     'Lokasi Tujuan', 'Lat: ${widget.destinationLocation
+                //     .latitude}, Long: ${widget.destinationLocation
+                //     .longitude}');
               },
               child: Text('Selesaikan Pesanan'),
             ),
@@ -222,6 +282,7 @@ class _DeliveryMapViewState extends State<DeliveryMapView> {
     );
   }
 
+
   Widget _buildLegendItem({required Color color, required String label}) {
     return Row(
       children: [
@@ -235,89 +296,74 @@ class _DeliveryMapViewState extends State<DeliveryMapView> {
       ],
     );
   }
+  Future<void> _fetchRoute() async {
+    String apiUrl = "https://maps.googleapis.com/maps/api/directions/json?origin=${widget.sourceLocation.latitude},${widget.sourceLocation.longitude}&destination=${widget.destinationLocation.latitude},${widget.destinationLocation.longitude}&key=${googleAPiKey}";
 
-  Future<void> _getDirections() async {
-    // You can use a library like http to make a request to the Google Maps Directions API
-    // and parse the response to get the polyline coordinates.
-
-    // Example using a fake response:
-    final String apiKey = 'AIzaSyAqjK9pohRLvcZZe745qh2KmpHS_DYsrts';
-    final String apiUrl =
-        'https://maps.googleapis.com/maps/api/directions/json?origin=${widget.sourceLocation.latitude},${widget.sourceLocation.longitude}&destination=${widget.destinationLocation.latitude},${widget.destinationLocation.longitude}&key=$apiKey';
-
-    final http.Response response = await http.get(Uri.parse(apiUrl));
+    final response = await http.get(Uri.parse(apiUrl));
+    // Extract distance from the first route
 
     if (response.statusCode == 200) {
-      final decodedResponse = json.decode(response.body);
-      final List<LatLng> points =
-      _convertToLatLng(_decodePoly(encodedString: decodedResponse['routes'][0]['overview_polyline']['points']));
+      Map<String, dynamic> data = json.decode(response.body);
+      List<LatLng> points = _decodePolyline(data['routes'][0]['overview_polyline']['points']);
+
+      double distance = data['routes'][0]['legs'][0]['distance']['value'] / 1000.0; // Distance in kilometers
+      // Update the actual distance
+      setState(() {
+        // Update the actual distance in the singleton instance
+        routeInfo.jarakDalamKM = distance;
+        _actualDistance = distance;
+        LocationUtil.kodePengiriman = widget.noDelivery;
+      });
+      print("Jarak: $_actualDistance KM");
+      Polyline polyline = Polyline(
+        polylineId: PolylineId('route'),
+        color: Colors.blue,
+        width: 5,
+        points: points,
+      );
 
       setState(() {
-        _polylines.add(Polyline(
-          polylineId: PolylineId('route'),
-          color: Colors.blue,
-          width: 6,
-          points: points,
-        ));
+        _polylines.add(polyline);
       });
     } else {
-      throw Exception('Failed to load directions');
+      // Handle error
+      print("Error fetching route: ${response.reasonPhrase}");
     }
   }
 
-  List<LatLng> _convertToLatLng(List points) {
-    List<LatLng> result = <LatLng>[];
-    for (int i = 0; i < points.length; i++) {
-      if (i % 2 != 0) {
-        result.add(LatLng(points[i - 1], points[i]));
-      }
-    }
-    return result;
-  }
-
-  List _decodePoly({required String encodedString}) {
-    var len = encodedString.length;
+  List<LatLng> _decodePolyline(String polyline) {
+    List<LatLng> polyLinePoints = [];
     int index = 0;
-    List<int> decoded = [];
-    int b, shift = 0, result = 0;
-    do {
-      b = encodedString.codeUnitAt(index++) - 63;
-      result |= (b & 0x1F) << shift;
-      shift += 5;
-    } while (b >= 0x20);
-    int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-    decoded.add(dlat);
-    result = 0;
-    shift = 0;
-    do {
-      b = encodedString.codeUnitAt(index++) - 63;
-      result |= (b & 0x1F) << shift;
-      shift += 5;
-    } while (b >= 0x20);
-    int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-    decoded.add(dlng);
-    for (int i = 2; i < len; i++) {
-      int value = 0;
-      int shift = 0;
-      int result = 0;
+    int len = polyline.length;
+    int lat = 0, lng = 0;
+
+    while (index < len) {
+      int b, shift = 0, result = 0;
       do {
-        b = encodedString.codeUnitAt(index++) - 63;
+        b = polyline.codeUnitAt(index++) - 63;
         result |= (b & 0x1F) << shift;
         shift += 5;
       } while (b >= 0x20);
       int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-      value += dlat;
-      result = 0;
+      lat += dlat;
+
       shift = 0;
+      result = 0;
       do {
-        b = encodedString.codeUnitAt(index++) - 63;
+        b = polyline.codeUnitAt(index++) - 63;
         result |= (b & 0x1F) << shift;
         shift += 5;
       } while (b >= 0x20);
       int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-      value += dlng;
-      decoded.add(value);
+      lng += dlng;
+
+      double latitude = lat / 1e5;
+      double longitude = lng / 1e5;
+
+      LatLng position = LatLng(latitude, longitude);
+      polyLinePoints.add(position);
     }
-    return decoded;
+
+    return polyLinePoints;
   }
 }

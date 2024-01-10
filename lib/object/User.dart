@@ -49,14 +49,14 @@ class User {
     }
   }
   // Fungsi untuk mengupdate latitude dan longitude
-  static Future<void> updateLocation(int userId, double lat, double lon) async {
+  static Future<void> updateLocation(int userId, double? lat, double? lon) async {
     try {
       final Uri url = Uri.parse('https://garudadriver.azurewebsites.net/api/update-driver/$userId/');
       final Map<String, String> headers = {'Content-Type': 'application/json'};
 
       // Limit lat and lon to six decimal places
-      final latString = lat.toStringAsFixed(6);
-      final lonString = lon.toStringAsFixed(6);
+      final latString = lat?.toStringAsFixed(6);
+      final lonString = lon?.toStringAsFixed(6);
 
       final Map<String, dynamic> body = {'lat': latString, 'lon': lonString};
 

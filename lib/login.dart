@@ -1,4 +1,6 @@
+import 'package:background_location/background_location.dart';
 import 'package:flutter/material.dart';
+import 'package:garudajayasakti/object/LocationUtil.dart';
 import 'package:garudajayasakti/object/User.dart';
 import 'colors.dart'; // Sesuaikan dengan jalur file User.dart
 import 'package:collection/collection.dart';
@@ -11,6 +13,13 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  String latitude = 'waiting...';
+  String longitude = 'waiting...';
+  String altitude = 'waiting...';
+  String accuracy = 'waiting...';
+  String bearing = 'waiting...';
+  String speed = 'waiting...';
+  String time = 'waiting...';
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (authenticatedUser != null) {
           // Save user.id for future use
           int userId = authenticatedUser.id;
+          LocationUtil.userid = userId;
 
           // Navigate to the next page and pass the user id
           Navigator.pushReplacementNamed(
@@ -120,6 +130,36 @@ class _LoginScreenState extends State<LoginScreen> {
             },
           );
         }
+        // await BackgroundLocation.setAndroidNotification(
+        //   title: 'Background service is running',
+        //   message: 'Background location in progress',
+        //   icon: '@drawanle/logo',
+        // );
+        // //await BackgroundLocation.setAndroidConfiguration(1000);
+        // await BackgroundLocation.startLocationService(
+        //     distanceFilter: 20);
+        // BackgroundLocation.getLocationUpdates((location) {
+        //   setState(() {
+        //     latitude = location.latitude.toString();
+        //     longitude = location.longitude.toString();
+        //     accuracy = location.accuracy.toString();
+        //     altitude = location.altitude.toString();
+        //     bearing = location.bearing.toString();
+        //     speed = location.speed.toString();
+        //     time = DateTime.fromMillisecondsSinceEpoch(
+        //         location.time!.toInt())
+        //         .toString();
+        //   });
+        //   print('''\n
+        //                 Latitude:  $latitude
+        //                 Longitude: $longitude
+        //                 Altitude: $altitude
+        //                 Accuracy: $accuracy
+        //                 Bearing:  $bearing
+        //                 Speed: $speed
+        //                 Time: $time
+        //               ''');
+        // });
       },
       child: Text('Login'),
       style: ElevatedButton.styleFrom(
@@ -136,4 +176,22 @@ class _LoginScreenState extends State<LoginScreen> {
       borderRadius: BorderRadius.circular(10),
     );
   }
+
+  Widget locationData(String data) {
+    return Text(
+      data,
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 18,
+      ),
+      textAlign: TextAlign.center,
+    );
+  }
+
+  // void getCurrentLocation() {
+  //   BackgroundLocation().getCurrentLocation().then((location) {
+  //     print('This is current Location ' + location.toMap().toString());
+  //   });
+  // }
+
 }
