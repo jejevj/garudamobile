@@ -142,7 +142,7 @@ class _HomeState extends State<Home> {
                 SizedBox(height: 20.0),
                 ElevatedButton(
                   onPressed: () {
-                    // Navigator.pushNamed(context, '/profile', arguments: {'userId': widget.userId});
+                    Navigator.pushNamed(context, '/profile', arguments: {'userId': widget.userId});
 
                   },
                   child: Text('Lihat Profil'),
