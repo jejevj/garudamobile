@@ -28,18 +28,17 @@ class LocationUtil {
       BackgroundLocation.setAndroidNotification(
         title: 'Background service is running',
         message: 'Background location in progress',
-        icon: '@drawable/logo', // Sesuaikan dengan ikon aplikasi Anda
       );
     });
 
     await BackgroundLocation.startLocationService(
-      distanceFilter: 0, //meter
+      distanceFilter: 0.5, //meter
     );
 
     BackgroundLocation.getLocationUpdates((location) {
       updateLocation(location,UserID);
     });
-    if (RouteInfo().jarakDalamKM < 1 && !isNearbyNotificationShown && kodePengiriman!=null) {
+    if (RouteInfo().jarakDalamKM < 2 && !isNearbyNotificationShown && kodePengiriman!=null) {
       LocationUtil()._showNotification('Lokasi Tujuan ${kodePengiriman}', "Tujuan anda sudah dekat");
       isNearbyNotificationShown = true;
     } else if (RouteInfo().jarakDalamKM >= 1) {
@@ -58,15 +57,19 @@ class LocationUtil {
     time = DateTime.fromMillisecondsSinceEpoch(location.time!.toInt()).toString();
 
     User.updateLocation(userID, location.latitude,location.longitude);
-    print("lokasi berubah");
-    print(kodePengiriman);
-
+    if (RouteInfo().jarakDalamKM < 2 && !isNearbyNotificationShown && kodePengiriman!=null) {
+      LocationUtil()._showNotification('Lokasi Tujuan ${kodePengiriman}', "Tujuan anda sudah dekat");
+      isNearbyNotificationShown = true;
+    } else if (RouteInfo().jarakDalamKM >= 1) {
+      // Reset flag jika jarak lebih dari atau sama dengan 1
+      isNearbyNotificationShown = false;
+    }
   }
 
   Future<void> _showNotification(String title, String body) async {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'your_channel_id',
-      'your_channel_name',
+      '32',
+      'Notifikasi Jarak',
 
       importance: Importance.max,
       priority: Priority.high,

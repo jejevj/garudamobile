@@ -25,6 +25,7 @@ class _DeliveryMapState extends State<DeliveryMap> {
     final String deliveryNumber = args['noDelivery'] ?? 'No. Delivery';
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
           title: const Text(
@@ -145,8 +146,8 @@ class _DeliveryMapViewState extends State<DeliveryMapView> {
 
   Future<void> _showNotification(String title, String body) async {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'your_channel_id',
-      'your_channel_name',
+      '22',
+      'notif',
 
       importance: Importance.max,
       priority: Priority.high,
@@ -214,10 +215,6 @@ class _DeliveryMapViewState extends State<DeliveryMapView> {
                   context,
                   MaterialPageRoute(builder: (context) => UploadBuktiPage(noDelivery: widget.noDelivery)),
                 );
-                // _showNotification(
-                //     'Lokasi Tujuan', 'Lat: ${widget.destinationLocation
-                //     .latitude}, Long: ${widget.destinationLocation
-                //     .longitude}');
               },
               child: Text('Selesaikan Pesanan'),
             ),
@@ -314,14 +311,12 @@ class _DeliveryMapViewState extends State<DeliveryMapView> {
         _actualDistance = distance;
         LocationUtil.kodePengiriman = widget.noDelivery;
       });
-      print("Jarak: $_actualDistance KM");
       Polyline polyline = Polyline(
         polylineId: PolylineId('route'),
         color: Colors.blue,
         width: 5,
         points: points,
       );
-
       setState(() {
         _polylines.add(polyline);
       });

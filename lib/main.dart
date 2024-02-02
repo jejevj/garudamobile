@@ -56,10 +56,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
 
     return MaterialApp(
       title: 'Garuda Monitoring',
+
+      debugShowCheckedModeBanner: false, // Tambahkan baris ini
       theme: ThemeData(
         primaryColor: AppColors.purplePrimary,
       ),
       initialRoute: '/splash', // Atur rute awal ke splash screen
+
 
       routes: {
         '/splash': (context) => SplashScreen(),
