@@ -38,7 +38,7 @@ class LocationUtil {
     BackgroundLocation.getLocationUpdates((location) {
       updateLocation(location,UserID);
     });
-    if (RouteInfo().jarakDalamKM < 2 && !isNearbyNotificationShown && kodePengiriman!=null) {
+    if (RouteInfo().jarakDalamKM < 0.4 && !isNearbyNotificationShown && kodePengiriman!=null) {
       LocationUtil()._showNotification('Lokasi Tujuan ${kodePengiriman}', "Tujuan anda sudah dekat");
       isNearbyNotificationShown = true;
     } else if (RouteInfo().jarakDalamKM >= 1) {
